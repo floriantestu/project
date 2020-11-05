@@ -15,7 +15,6 @@ mkdir -p Documentation
 
 printf "${YELLOW}   [ CHECK PACKAGE ]\n${NC}"
 if [ $1 -eq 0 ]; then
-    # Doxygen
     if [ -f "Doxyfile" ]; then
         echo "Dir exists" &> /dev/null
     else
@@ -36,6 +35,17 @@ if [ $1 -eq 0 ]; then
         sudo apt-get install python3-pip
         printf "${GREEN} Python3${NC} = ${ORANGE} [ ADDED ]${NC}\n"
     fi
+    # Docker
+    dpkg -s docker-ce &> /dev/null
+    if [ $? -eq 0 ];
+        printf "${GREEN} Docker and Docker compose${NC} = ${BLUE} [ OK ]${NC}\n"
+      else
+        sudo apt-get update
+        sudo apt-get install docker-ce docker-ce-cli containerd.io
+        sudo curl -L "https://github.com/docker/compose/releases/download/1.26.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        sudo chmod +x /usr/local/bin/docker-compose
+        printf "${GREEN} Docker and Docker compose${NC} = ${ORANGE} [ ADDED ]${NC}\n"
+      fi
     # Conan
     pip3 list 2>&1 | grep -F conan > /dev/null 2>&1
     if [ $? -eq 0 ]; then
@@ -55,7 +65,7 @@ if [ $1 -eq 0 ]; then
         mv conan_config Conan
         echo -e "[requires]\n\n[options]\n\n[generators]" >> conan_config
         conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan $?
-        if [ $? -ne 0 ]; then
+        if [ echo $? -ne 0 ]; then
             printf "${RED}WARNING${NC} reboot to finish the configuration, relaunch \"make config\" for works"
             # sleep 10
             # sudo reboot
@@ -66,7 +76,7 @@ if [ $1 -eq 0 ]; then
 else
     # REMOVE Doxygen
     dpkg -s doxygen &> /dev/null
-    if [ $? -eq 0 ]; then
+    if [ echo $? -eq 0 ]; then
         sudo apt-get remove doxygen
         printf "${GREEN} Doxygen${NC} = ${ORANGE} [ Has been uninstall ]${NC}\n"
     else
@@ -91,27 +101,3 @@ else
         printf "${GREEN} Python3 is already uninstall${NC}\n"
     fi
 fi
-
-
-# #Boost CPP
-# dpkg -s libboost1.62-all-dev &> /dev/null
-# if [ $? -eq 0 ]; then
-#     printf "${GREEN} Boost${NC} = ${BLUE} [ OK ]${NC}\n"
-# else
-#     sudo apt-get install libboost1.62-all-dev
-#     printf "${GREEN} Boost${NC} = ${ORANGE} [ ADDED ]${NC}\n"
-# fi
-
-
-
-# if grep -r  "#include <boost/" ./Includes; then 
-#     printf "OK\n"
-# else
-#     printf "KO\n"
-# fi
-
-# for entry in "Includes"/*
-# do
-
-#   echo "$entry"
-# done
